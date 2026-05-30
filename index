@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Happy Paws Financial Dashboard</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<!-- ═════════ HEADER ═════════ -->
+<header class="site-header">
+  <div class="header-inner">
+
+    <div class="brand">
+      <span class="brand-icon">🐾</span>
+
+      <div>
+        <div class="brand-name">
+          Happy Paws Veterinary Clinic
+        </div>
+
+        <div class="brand-sub">
+          Financial Dashboard · ปี 2025 · นครราชสีมา
+        </div>
+      </div>
+
+    </div>
+
+    <div class="header-meta">
+
+      <span id="last-updated" class="meta-tag">
+        กำลังโหลด...
+      </span>
+
+      <span class="meta-tag persona-tag">
+        💰 แผนกการเงิน
+      </span>
+
+    </div>
+
+  </div>
+</header>
+
+
+<!-- ═════════ LOADING ═════════ -->
+<div id="loading-overlay" class="loading-overlay">
+
+  <div class="loading-box">
+
+    <div class="spinner"></div>
+
+    <p class="loading-text">
+      กำลังโหลดข้อมูลจาก Google Sheets...
+    </p>
+
+    <p class="loading-sub">
+      อาจใช้เวลา 5-15 วินาที
+    </p>
+
+  </div>
+
+</div>
+
+
+<!-- ═════════ DASHBOARD ═════════ -->
+<main id="dashboard" class="dashboard hidden">
+
+<section class="section">
+
+<div class="section-label">
+A · Hero KPI
+</div>
+
+<div class="hero-grid">
+
+<div class="hero-card primary-hero">
+
+<div class="hero-eyebrow">
+💵 Total Revenue 2025
+</div>
+
+<div class="hero-number" id="hero-revenue">
+—
+</div>
+
+<div class="hero-context-row">
+
+<span class="context-pill"
+id="hero-projection-pill">
+—
+</span>
+
+<span class="context-pill"
+id="hero-mom-pill">
+—
+</span>
+
+</div>
+
+</div>
+
+<div class="hero-card secondary-hero">
+
+<div class="hero-eyebrow">
+🎫 Average Ticket Size
+</div>
+
+<div class="hero-number medium"
+id="hero-ticket">
+—
+</div>
+
+<div class="hero-sub">
+เฉลี่ยต่อการเข้ารับบริการ 1 ครั้ง
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section class="section">
+
+<div class="section-label">
+B · Supporting KPIs
+</div>
+
+<div class="kpi-row">
+
+<div class="kpi-card">
+<div class="kpi-value" id="kpi-visits">—</div>
+<div class="kpi-label">Visits</div>
+</div>
+
+<div class="kpi-card">
+<div class="kpi-value" id="kpi-customers">—</div>
+<div class="kpi-label">Customers</div>
+</div>
+
+<div class="kpi-card">
+<div class="kpi-value" id="kpi-return">—</div>
+<div class="kpi-label">Return Rate</div>
+</div>
+
+<div class="kpi-card">
+<div class="kpi-value" id="kpi-avg-month">—</div>
+<div class="kpi-label">Avg Revenue</div>
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<!-- ═════════ ERROR ═════════ -->
+<div id="error-state"
+class="error-state hidden">
+
+<h2>โหลดข้อมูลไม่สำเร็จ</h2>
+
+<p id="error-msg"></p>
+
+<button onclick="loadData()">
+ลองใหม่
+</button>
+
+</div>
+
+
+<!-- JavaScript -->
+<script src="charts.js"></script>
+
+</body>
+
+</html>
