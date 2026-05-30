@@ -5,7 +5,7 @@
 // ======================================================
 
 const API_URL =
-"https://script.google.com/macros/s/PASTE_WEBAPP_ID/exec";
+"https://script.google.com/macros/s/AKfycbwzrr9_VDQdJ22YHCwzUTOK2_CA-MxeMGMXmtBWtzrgBkwQcSUBrrhYSiC_ObqR1MFTyg/exec";
 
 let _data = null;
 let _trendChart = null;
