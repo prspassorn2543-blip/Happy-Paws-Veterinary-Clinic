@@ -25,7 +25,7 @@ if (window.Chart) {
 // ------------------------------------------------------
 // INIT
 // ------------------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
   loadData();
 });
 
@@ -92,7 +92,7 @@ function showLoading(show) {
   }
 }
 
-function showError(show, msg = "") {
+function showError(show, msg) {
   const el = document.getElementById("error-state");
   if (el) {
     el.classList.toggle("hidden", !show);
@@ -135,8 +135,7 @@ function renderHero(d) {
 
   const projectionEl = document.getElementById("hero-projection-pill");
   if (projectionEl) {
-    projectionEl.textContent =
-      "🔮 Projection: " + formatTHBShort(h.projection);
+    projectionEl.textContent = "🔮 Projection: " + formatTHBShort(h.projection);
   }
 
   const momEl = document.getElementById("hero-mom-pill");
@@ -157,7 +156,7 @@ function renderKPIs(d) {
 
   setText("kpi-visits", formatNum(s.totalVisits));
   setText("kpi-customers", formatNum(s.uniqueCustomers));
-  setText("kpi-return", (s.returnRate ?? 0) + "%");
+  setText("kpi-return", String(s.returnRate || 0) + "%");
   setText("kpi-avg-month", formatTHBShort(s.avgMonthlyRevenue));
 }
 
@@ -176,13 +175,13 @@ function renderTrendChart(d) {
 
   const values =
     _chartMode === "revenue"
-      ? (d.monthly?.revenue || [])
-      : (d.monthly?.visits || []);
+      ? (d.monthly && d.monthly.revenue ? d.monthly.revenue : [])
+      : (d.monthly && d.monthly.visits ? d.monthly.visits : []);
 
   _trendChart = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: d.monthly?.labels || [],
+      labels: d.monthly && d.monthly.labels ? d.monthly.labels : [],
       datasets: [
         {
           data: values,
@@ -212,16 +211,18 @@ function renderQuarters(d) {
   const row = document.getElementById("quarter-row");
   if (!row) return;
 
-  row.innerHTML = (d.quarterRevenue || [])
-    .map(
-      (q, i) => `
-      <div class="quarter-item">
-        <div class="quarter-label">Q${i + 1}</div>
-        <div class="quarter-value">${formatTHBShort(q)}</div>
-      </div>
-    `
-    )
-    .join("");
+  const arr = d.quarterRevenue || [];
+  let html = "";
+
+  for (let i = 0; i < arr.length; i++) {
+    html +=
+      '<div class="quarter-item">' +
+      '<div class="quarter-label">Q' + (i + 1) + "</div>" +
+      '<div class="quarter-value">' + formatTHBShort(arr[i]) + "</div>" +
+      "</div>";
+  }
+
+  row.innerHTML = html;
 }
 
 // ------------------------------------------------------
@@ -232,24 +233,27 @@ function createBars(containerId, data, field) {
   if (!box) return;
 
   const list = data || [];
-  const max = list[0]?.revenue || 1;
+  const max = list.length > 0 && list[0].revenue ? list[0].revenue : 1;
 
-  box.innerHTML = list
-    .map(
-      (x) => `
-      <div class="bar-row">
-        <div class="bar-label">${x[field] || "-"}</div>
-        <div class="bar-track">
-          <div
-            class="bar-fill rank-1"
-            style="width:${((x.revenue || 0) / max) * 100}%">
-          </div>
-        </div>
-        <div class="bar-value">${formatTHBShort(x.revenue || 0)}</div>
-      </div>
-    `
-    )
-    .join("");
+  let html = "";
+
+  for (let i = 0; i < list.length; i++) {
+    const x = list[i];
+    const label = x[field] || "-";
+    const revenue = x.revenue || 0;
+    const width = (revenue / max) * 100;
+
+    html +=
+      '<div class="bar-row">' +
+      '<div class="bar-label">' + label + "</div>" +
+      '<div class="bar-track">' +
+      '<div class="bar-fill rank-1" style="width:' + width + '%"></div>' +
+      "</div>" +
+      '<div class="bar-value">' + formatTHBShort(revenue) + "</div>" +
+      "</div>";
+  }
+
+  box.innerHTML = html;
 }
 
 function renderServiceBars(d) {
@@ -257,4 +261,112 @@ function renderServiceBars(d) {
 }
 
 function renderDoctorBars(d) {
-  createBars("doctor-bars
+  createBars("doctor-bars", d.doctorBreakdown, "name");
+}
+
+// ------------------------------------------------------
+// DONUTS
+// ------------------------------------------------------
+function renderPetChart(d) {
+  if (_petChart) {
+    _petChart.destroy();
+  }
+
+  const labels = [];
+  const data = [];
+  const list = d.petBreakdown || [];
+
+  for (let i = 0; i < list.length; i++) {
+    labels.push(list[i].pet);
+    data.push(list[i].revenue);
+  }
+
+  _petChart = createDonut("pet-chart", labels, data);
+}
+
+function renderNvrChart(d) {
+  if (_nvrChart) {
+    _nvrChart.destroy();
+  }
+
+  _nvrChart = createDonut(
+    "nvr-chart",
+    ["New", "Returning"],
+    [
+      d.newVsReturning ? d.newVsReturning.new || 0 : 0,
+      d.newVsReturning ? d.newVsReturning.returning || 0 : 0,
+    ]
+  );
+}
+
+function createDonut(id, labels, data) {
+  const canvas = document.getElementById(id);
+  if (!canvas || !window.Chart) return null;
+
+  const ctx = canvas.getContext("2d");
+
+  return new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          data: data,
+          backgroundColor: ["#3B82F6", "#93C5FD", "#F59E0B", "#10B981", "#EF4444"],
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+    },
+  });
+}
+
+// ------------------------------------------------------
+// INSIGHTS
+// ------------------------------------------------------
+function renderInsights(d) {
+  const row = document.getElementById("insight-row");
+  if (!row) return;
+
+  const list = d.insights || [];
+  let html = "";
+
+  for (let i = 0; i < list.length; i++) {
+    const item = list[i];
+    html +=
+      '<div class="insight-card">' +
+      '<div class="insight-icon">' + (item.icon || "") + "</div>" +
+      '<div class="insight-title">' + (item.title || "") + "</div>" +
+      '<div class="insight-body">' + (item.body || "") + "</div>" +
+      "</div>";
+  }
+
+  row.innerHTML = html;
+}
+
+// ------------------------------------------------------
+// FORMAT
+// ------------------------------------------------------
+function formatTHB(n) {
+  return "฿" + Math.round(n || 0).toLocaleString("th-TH");
+}
+
+function formatTHBShort(n) {
+  const value = Number(n || 0);
+
+  if (value >= 1000000) {
+    return "฿" + (value / 1000000).toFixed(1) + "M";
+  }
+
+  if (value >= 1000) {
+    return "฿" + (value / 1000).toFixed(1) + "K";
+  }
+
+  return formatTHB(value);
+}
+
+function formatNum(n) {
+  return Number(n || 0).toLocaleString("th-TH");
+}
